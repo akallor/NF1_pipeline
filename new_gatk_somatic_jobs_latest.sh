@@ -103,8 +103,8 @@ echo "Filtering Mutect2 calls with stricter thresholds..."
 $gatk FilterMutectCalls \
     -V ${sample_dir}/${bam_base}.unfiltered.vcf \
     --ob-priors ${sample_dir}/${bam_base}.read-orientation-model.tar.gz \
-    --min-median-base-quality 25 \
-    --max-alt-allele-count 1 \
+    --min-median-base-quality 20 \
+    --max-alt-allele-count 3 \
     -O ${sample_dir}/${bam_base}.filtered.vcf -R ${reference}
 
 # 6. Additional VariantFiltration (Hard Filters)
@@ -112,11 +112,7 @@ echo "Applying hard filters to remove false positives..."
 $gatk VariantFiltration \
     -R ${reference} \
     -V ${sample_dir}/${bam_base}.filtered.vcf \
-    --filter-expression "DP < 10" --filter-name "LowDepth" \
-    --filter-expression "FILTER == 'PASS'" --filter-name "OnlyPASS" \
-    --filter-expression "FILTER =~ 'strand_bias'" --filter-name "StrandBias" \
-    --filter-expression "FILTER =~ 'clustered_events'" --filter-name "ClusteredEvents" \
-    --filter-expression "FILTER =~ 'contamination'" --filter-name "Contamination" \
+    --genotype-filter-expression "DP < 10" --genotype-filter-name "LowDepth" \
     -O ${sample_dir}/${bam_base}.hardfiltered.vcf
 
 # 7. Keep only "PASS" variants
