@@ -54,9 +54,56 @@ for i, file_path in enumerate(unique_files):
 if dfs:
     result = pd.concat(dfs, ignore_index=True)
 
+#Derive a super-class variable
+
+def create_super_class(df):
+    """
+    Creates a 'super_class' column based on ClinVar annotations.
+    
+    Parameters:
+    df (pandas.DataFrame): DataFrame containing 'clinvar' and 'avsnp150' columns
+    
+    Returns:
+    pandas.DataFrame: Original DataFrame with an additional 'super_class' column
+    """
+    # First filter out entries with no avsnp150 or clinvar annotation
+    filtered_df = df[(df['avsnp150'] != '.') & (df['clinvar'] != '.')]
+    
+    # Create the super_class column
+    def classify(clinvar_value):
+        if 'pathogenic' in clinvar_value.lower():
+            return 'Pathogenic'
+        elif 'benign' in clinvar_value.lower():
+            return 'Benign'
+        else:
+            return 'Unclassified'
+    
+    # Apply the classification function
+    filtered_df['super_class'] = filtered_df['clinvar'].apply(classify)
+    
+    # Create a new DataFrame with original data plus super_class for annotated variants
+    result_df = df.copy()
+    
+    # Initialize super_class as None for all rows
+    result_df['super_class'] = None
+    
+    # Update super_class values for the filtered rows
+    result_df.loc[(df['avsnp150'] != '.') & (df['clinvar'] != '.'), 'super_class'] = filtered_df['super_class']
+    
+    return result_df
+
+# Example usage:
+# soma_with_super_class = create_super_class(soma)
+
+# Example to check distribution of super classes
+# soma_with_super_class['super_class'].value_counts() 
+
+
+    result2 = create_super_class(result) 
+
     # Save to the output file
     output_file = "complete_annotation_latest.tsv"
-    result.to_csv(output_file, sep='\t', index=False)
+    result2.to_csv(output_file, sep='\t', index=False)
 
     print(f"Successfully concatenated {len(dfs)} files into {output_file}")
     print(f"Total rows in output file: {len(result)}")
