@@ -112,7 +112,7 @@ echo "Applying hard filters to remove false positives..."
 $gatk VariantFiltration \
     -R ${reference} \
     -V ${sample_dir}/${bam_base}.filtered.vcf \
-    --genotype-filter-expression "DP < 20" --genotype-filter-name "LowDepth" \
+    --filter-expression "DP < 20" --filter-name "LowDepth" \
     -O ${sample_dir}/${bam_base}.hardfiltered.hc.vcf
 
 # 7. Keep only "PASS" variants
